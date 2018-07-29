@@ -46,7 +46,8 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_login); //Uses activity_login layout
+
         mRegister = (TextView) findViewById(R.id.link_register);
         mEmail = (EditText) findViewById(R.id.input_email);
         mPassword = (EditText) findViewById(R.id.input_password);
@@ -72,7 +73,8 @@ public class LoginActivity extends AppCompatActivity {
 
                     showProgressBar();
 
-                    FirebaseAuth.getInstance().signInWithEmailAndPassword(mEmail.getText().toString(),
+                    FirebaseAuth.getInstance().signInWithEmailAndPassword(
+                            mEmail.getText().toString(),
                             mPassword.getText().toString())
                             .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                 @Override
@@ -82,14 +84,19 @@ public class LoginActivity extends AppCompatActivity {
 
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
+
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Toast.makeText(LoginActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
+
                             hideProgressBar();
+
                         }
                     });
                 }else{
+
                     Toast.makeText(LoginActivity.this, "You didn't fill in all the fields.", Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
@@ -104,6 +111,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        //Dynamically loading icon image on login screen using UniversalImageLoader
         UniversalImageLoader.setImage("assets://money_icon.png", mLogo);
 
         hideSoftKeyboard();
@@ -114,19 +122,23 @@ public class LoginActivity extends AppCompatActivity {
      * Return true if the @param is null
      * @param string
      * @return
+     * Return true if isEmpty, return false if not empty
      */
     private boolean isEmpty(String string){
         return string.equals("");
     }
 
 
-    private void showProgressBar(){
+    private void showProgressBar()
+    {
         mProgressBar.setVisibility(View.VISIBLE);
 
     }
 
-    private void hideProgressBar(){
-        if(mProgressBar.getVisibility() == View.VISIBLE){
+    private void hideProgressBar()
+    {
+        if(mProgressBar.getVisibility() == View.VISIBLE)
+        {
             mProgressBar.setVisibility(View.INVISIBLE);
         }
     }
