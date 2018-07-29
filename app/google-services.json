@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "55485342015",
+    "firebase_url": "https://cwm-classifiedsadsapp.firebaseio.com",
+    "project_id": "cwm-classifiedsadsapp",
+    "storage_bucket": "cwm-classifiedsadsapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:55485342015:android:f355b2f19e1ca056",
+        "android_client_info": {
+          "package_name": "com.ahsan.a51_cwm_classifiedsadsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "55485342015-4lsjabe1ci5be6j27u69jk8e8g9p1nq8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1feM7-txSpoHCHuTOTSKlgt26B3wuUws"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
