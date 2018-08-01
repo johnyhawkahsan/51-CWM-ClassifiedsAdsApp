@@ -37,6 +37,11 @@ public class SearchActivity extends AppCompatActivity {
     private void setupViewPager(){
         mPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
+        mPagerAdapter.addFragment(new SearchFragment());
+        mPagerAdapter.addFragment(new WatchListFragment());
+        mPagerAdapter.addFragment(new PostFragment());
+        mPagerAdapter.addFragment(new AccountFragment());
+
         mViewPager.setAdapter(mPagerAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
 
