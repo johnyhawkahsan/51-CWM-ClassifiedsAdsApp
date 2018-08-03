@@ -44,7 +44,7 @@ public class SelectPhotoDialog extends DialogFragment{
         selectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: accessing phones memory.");
+                Log.d(TAG, "onClick: accessing phones memory. PICKFILE_REQUEST_CODE = " + PICKFILE_REQUEST_CODE);
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);//Allow the user to select a particular kind of data and return it. This is different than ACTION_PICK in that here we just say what kind of data is desired, not a URI of existing data from which the user can pick.
                 intent.setType("image/*");
                 startActivityForResult(intent, PICKFILE_REQUEST_CODE);
@@ -56,7 +56,7 @@ public class SelectPhotoDialog extends DialogFragment{
         takePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: starting camera.");
+                Log.d(TAG, "onClick: starting camera CAMERA_REQUEST_CODE = " + CAMERA_REQUEST_CODE);
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);//Standard Intent action that can be sent to have the camera application capture an image and return it.
                 startActivityForResult(intent, CAMERA_REQUEST_CODE);
             }
@@ -100,7 +100,8 @@ public class SelectPhotoDialog extends DialogFragment{
     public void onAttach(Context context) {
         super.onAttach(context);
         try{
-            mOnPhotoSelectedListener = (OnPhotoSelectedListener) getActivity();
+            //getTargetFragment() Return the target fragment set by setTargetFragment(). setTargetFragment() is done in PostFragment line 71
+            mOnPhotoSelectedListener = (OnPhotoSelectedListener) getTargetFragment(); //We previously used getActivity() here.
         }catch (ClassCastException e){
             Log.e(TAG, "onAttach: ClassCastException: " + e.getMessage() );
         }

@@ -1,5 +1,7 @@
 package com.ahsan.a51_cwm_classifiedsadsapp;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -19,7 +21,7 @@ import com.ahsan.a51_cwm_classifiedsadsapp.util.UniversalImageLoader;
  * Created by Ahsan on 8/1/2018.
  */
 
-public class PostFragment extends Fragment{
+public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoSelectedListener{
 
     private static final String TAG = "PostFragment";
 
@@ -30,6 +32,41 @@ public class PostFragment extends Fragment{
     private ProgressBar mProgressBar;
 
     //vars
+    private Bitmap mSelectedBitmap;
+    private Uri mSelectedUri;
+
+
+
+    //Important method after implementing OnPhotoSelectedListener
+    @Override
+    public void getImagePath(Uri imagePath) {
+        Log.d(TAG, "getImagePath: setting the image to imageViw using UniversalImageLoader");
+
+        //Assign to a global variable
+        mSelectedBitmap = null;
+        mSelectedUri = imagePath;
+
+        UniversalImageLoader.setImage(imagePath.toString(), mPostImage);//Using universalImageLoader, we set the image
+
+    }
+
+    //Important method after implementing OnPhotoSelectedListener
+    @Override
+    public void getImageBitmap(Bitmap bitmap) {
+        Log.d(TAG, "getImageBitmap: setting the captured image to imageView directly");
+
+        //Assign to a global variable
+        mSelectedBitmap = bitmap;
+        mSelectedUri = null;
+
+        mPostImage.setImageBitmap(bitmap); //Directly set image using bitmap- Note: we don't need to use ImageLoader here.
+
+    }
+
+
+
+
+
 
 
 
@@ -57,12 +94,20 @@ public class PostFragment extends Fragment{
     }
 
 
+    //When postImage image is clicked, launch dialog box to select either photo or either capture new photo
     private void init(){
 
         mPostImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: opening dialog to choose new photo");
+
+                //Now run the select photo dialog box
+                SelectPhotoDialog dialog = new SelectPhotoDialog();
+                dialog.show(getFragmentManager(), getString(R.string.dialog_select_photo));
+                dialog.setTargetFragment(PostFragment.this, 1); //Set where PhotoDialg fragment is going to send the data. Note: 1 is request code
+
+                //TODO: NOTE: We are sending data directly
 
             }
         });
@@ -101,6 +146,7 @@ public class PostFragment extends Fragment{
     private boolean isEmpty(String string){
         return string.equals("");
     }
+
 
 
 }

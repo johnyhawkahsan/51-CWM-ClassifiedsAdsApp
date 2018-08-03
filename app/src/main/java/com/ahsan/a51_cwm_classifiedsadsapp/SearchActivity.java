@@ -63,10 +63,11 @@ public class SearchActivity extends AppCompatActivity {
 
     }
 
-    //We incorporated Permission in Manifest, but for MARSHMALLOW, We need to ask for permissions explicitly
+    //For API 21 and above, we incorporated Permission in Manifest, but for MARSHMALLOW, We need to ask for permissions explicitly
     private void verifyPermissions(){
-        Log.d(TAG, "verifyPermissions: asking user for permissions");
+        Log.d(TAG, "verifyPermissions()");
 
+        //Permissions are stored in String array
         String[] permissions = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -80,12 +81,14 @@ public class SearchActivity extends AppCompatActivity {
 
         {
             //If those 3 permissions are granted, setup view pager
+            Log.d(TAG, "verifyPermissions: if those 3 permissions are granted, run setup view pager" );
             setupViewPager();
-            Log.d(TAG, "verifyPermissions: those 3 permissions are granted" );
+
         }
 
         //else if permissions are not granted, ask for those 3 permissions.
         else{
+            Log.d(TAG, "verifyPermissions: else ask for 3 permissions" );
             ActivityCompat.requestPermissions(
                     SearchActivity.this,
                     permissions,
@@ -93,7 +96,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    //Do task based on REQUEST_CODE
+    //Do task based on REQUEST_CODE- Here we have only one task to execute, so we can omit if else statement based on requestCode and directly call verifyPermissions()
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //Here request code doesn't matter because we've already asked for permission above but to confirm, I log requestCode here
