@@ -49,8 +49,8 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
     //vars
     private Bitmap mSelectedBitmap;
     private Uri mSelectedUri;
-    private byte[] mUploadBytes; //This is what we are going to upload to Firebase
-    private double mProgress = 0; //Upload progress
+    private byte[] mUploadBytes; //This is what we are going to upload to FireBase
+    private double mProgress = 0; //Global variable for Upload progress within executeUploadTask()
 
 
 
@@ -124,7 +124,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
         });
 
 
-        //TODO: NOTE: We are sending data directly to Firebase
+        //TODO: NOTE: We are sending data directly to FireBase
         mPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,24 +156,37 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
     }
 
     // (Two methods with same names?) Method overloading (or Function overloading) is legal in C++ and in Java, but only if the methods take a different arguments (i.e. do different things).
+    //In this method, we have bitmap and Uri is null.
     private void uploadNewPhoto(Bitmap bitmap) {
-        BackgroundImageResize task = new BackgroundImageResize(bitmap);
-        //mUploadBytes = task.execute(mSelectedUri);
+        Log.d(TAG, "uploadNewPhoto: uploading a new image bitmap to storage");
+        BackgroundImageResize resize = new BackgroundImageResize(bitmap);
+        Uri uri = null;
+        resize.execute(uri);
     }
 
-    private void uploadNewPhoto(Uri mSelectedUri) {
-        BackgroundImageResize task = new BackgroundImageResize(mSelectedBitmap);
-        task.execute(mSelectedUri);
+    //In this method, we have Uri and bitmap is null.
+    private void uploadNewPhoto(Uri imagePath) {
+        Log.d(TAG, "uploadNewPhoto: uploading a new image uri to storage.");
+        BackgroundImageResize resize = new BackgroundImageResize(null);//We are passing null image in this method
+        resize.execute(imagePath);
     }
 
-    //Now we need to compress the image in BackgroundTask before sending to Firebase
+
+
+
+
+
+
+
+    //Now we need to compress the image in BackgroundTask before sending to FireBase
     public class BackgroundImageResize extends AsyncTask<Uri, Integer, byte[]>{ //Uri = param, Integer = progress and byte[] = result
-        Bitmap mBitmap;
+        Bitmap mBitmap; //If bitmap is available, mBitmap will be assigned within constructor. If null, mBitmap will be obtained from Uri
 
+        //Constructor accepts Bitmap, which can either be bitmap or null - This if statement identifies if there is any bitmap
         public BackgroundImageResize(Bitmap bitmap) {
             if (bitmap != null){
                 Log.d(TAG, "BackgroundImageResize: bitmap != null");
-                this.mBitmap = bitmap;
+                this.mBitmap = bitmap; //If we are using Bitmap instead of Uri, our bitmap will not be null, so we will assign
             }
         }
 
@@ -204,25 +217,38 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
             //Also if the image was not Uri and was bitmap, it will automatically skip if statement and does this below task.
             byte[] bytes = null;
             Log.d(TAG, "doInBackground: megabytes before compression: " + mBitmap.getByteCount() / 1000000);//To get image size before compression, dividing by 1000000 is size of mega bytes
+
             bytes = getBytesFromBitmap(mBitmap, 100); //This method is defined below
             Log.d(TAG, "doInBackground: megabytes after compression: " + bytes.length / 1000000);//To get image size after compression
+
             return bytes;
         }
 
+        //After image is compressed in BackgroundImageResize task, upload the byte array to FireBase using upload task
         @Override
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             mUploadBytes = bytes; //After byte array is received after getting bitmap and converting to byte[] array
             hideProgressBar();
-            //execute the upload task
+
+            //execute the upload task after image is compressed in BackgroundImageResize task
+            executeUploadTask();
         }
     }
+
+
+
+
+
+
 
     //To execute the upload task to FireBase
     public void executeUploadTask(){
         Toast.makeText(getActivity(), "Uploading image", Toast.LENGTH_SHORT).show();
 
-        final String postId = FirebaseDatabase.getInstance().getReference().push().getKey();
+        final String postId = FirebaseDatabase.getInstance().getReference().push().getKey(); //Get this posts unique id
+
+        //Save this post in directory posts/users/userID/postId/post_image
         final StorageReference storageReference = FirebaseStorage.getInstance().getReference()
                 .child("posts/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() +
                 "/" + postId + "/post_image");
@@ -232,16 +258,35 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
+                Toast.makeText(getActivity(), "Post Success", Toast.LENGTH_SHORT).show();
+
+                //Insert the download urL into the FireBase database
+                @SuppressWarnings("VisibleForTests") Uri firebaseUri = taskSnapshot.getDownloadUrl();
+                Log.d(TAG, "onSuccess: firebase download url: " + firebaseUri.toString());
+
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+
                 Toast.makeText(getActivity(), "Could not upload photo", Toast.LENGTH_SHORT).show();
+
             }
         }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                //double currentProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                //TaskSnapshot was giving error "This method should only be accessed from tests or within private scope". Solved by this answer : https://stackoverflow.com/questions/41105586/android-firebase-tasksnapshot-method-should-only-be-accessed-within-privat
+                @SuppressWarnings("VisibleForTests") double currentProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                Log.d(TAG, "onProgress: upload is " + mProgress + "& done");
+                Toast.makeText(getActivity(), mProgress + "%", Toast.LENGTH_SHORT).show();
+
+                //TODO: Because of the error, I used simple approach above so this is going to show progress too often now.
+                //This code is used to prevent showing the progress too often.
+                //if (currentProgress > mProgress + 15){
+                    //mProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                //}
+
             }
         });
 
