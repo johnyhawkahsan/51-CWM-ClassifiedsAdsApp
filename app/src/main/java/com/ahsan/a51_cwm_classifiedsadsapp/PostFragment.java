@@ -141,10 +141,12 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 {
                     //We have a bitmap and no Uri
                     if (mSelectedBitmap != null && mSelectedUri == null){
+                        Log.d(TAG, "onClick: We have a bitmap and no Uri");
                         uploadNewPhoto(mSelectedBitmap);
                     }
                     //We have a Uri and no bitmap
                     else if (mSelectedBitmap == null && mSelectedUri != null){
+                        Log.d(TAG, "onClick: We have a Uri and no bitmap");
                         uploadNewPhoto(mSelectedUri);
                     }
 
@@ -249,11 +251,14 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
         Toast.makeText(getActivity(), "Uploading image", Toast.LENGTH_SHORT).show();
 
         final String postId = FirebaseDatabase.getInstance().getReference().push().getKey(); //Get this posts unique id
+        Log.d(TAG, "executeUploadTask: postId = " + postId);
 
         //Save this post in directory posts/users/userID/postId/post_image
         final StorageReference storageReference = FirebaseStorage.getInstance().getReference()
                 .child("posts/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() +
                 "/" + postId + "/post_image");
+
+        Log.d(TAG, "executeUploadTask: storageReference = " + storageReference);
 
         UploadTask uploadTask = storageReference.putBytes(mUploadBytes);
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -265,6 +270,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 //Insert the download urL for uploaded image into the FireBase database
                 @SuppressWarnings("VisibleForTests") Uri firebaseUri = taskSnapshot.getDownloadUrl();
                 Log.d(TAG, "onSuccess: FireBase download url: " + firebaseUri.toString());
+
 
                 DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
                 //Save this reference in Post object
@@ -278,7 +284,14 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 post.setPrice(mPrice.getText().toString());
                 post.setState_province(mStateProvince.getText().toString());
                 post.setTitle(mTitle.getText().toString());
+                post.setUser_id(FirebaseAuth.getInstance().getCurrentUser().getUid()); //Get current logged in users id
 
+                //Save the object "post" data with title "posts" and then "PostId"
+                reference.child(getString(R.string.node_posts))
+                        .child(postId)
+                        .setValue(post);
+
+                resetFields();
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -292,9 +305,10 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
             @Override
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                 //TaskSnapshot was giving error "This method should only be accessed from tests or within private scope". Solved by this answer : https://stackoverflow.com/questions/41105586/android-firebase-tasksnapshot-method-should-only-be-accessed-within-privat
-                @SuppressWarnings("VisibleForTests") double currentProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                Log.d(TAG, "onProgress: upload is " + mProgress + "& done");
-                Toast.makeText(getActivity(), mProgress + "%", Toast.LENGTH_SHORT).show();
+
+                //@SuppressWarnings("VisibleForTests") double currentProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                //Log.d(TAG, "onProgress: upload is " + mProgress + "& done");
+                //Toast.makeText(getActivity(), mProgress + "%", Toast.LENGTH_SHORT).show();
 
                 //TODO: Because of the error, I used simple approach above so this is going to show progress too often now.
                 //This code is used to prevent showing the progress too often.
