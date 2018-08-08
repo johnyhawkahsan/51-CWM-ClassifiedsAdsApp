@@ -19,10 +19,12 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.UniversalImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -260,9 +262,22 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
 
                 Toast.makeText(getActivity(), "Post Success", Toast.LENGTH_SHORT).show();
 
-                //Insert the download urL into the FireBase database
+                //Insert the download urL for uploaded image into the FireBase database
                 @SuppressWarnings("VisibleForTests") Uri firebaseUri = taskSnapshot.getDownloadUrl();
-                Log.d(TAG, "onSuccess: firebase download url: " + firebaseUri.toString());
+                Log.d(TAG, "onSuccess: FireBase download url: " + firebaseUri.toString());
+
+                DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+                //Save this reference in Post object
+                Post post = new Post();
+                post.setImage(firebaseUri.toString()); //Image URL within FireBase
+                post.setCity(mCity.getText().toString());
+                post.setContact_email(mContactEmail.getText().toString());
+                post.setCountry(mContactEmail.getText().toString());
+                post.setDescription(mDescription.getText().toString());
+                post.setPost_id(postId);
+                post.setPrice(mPrice.getText().toString());
+                post.setState_province(mStateProvince.getText().toString());
+                post.setTitle(mTitle.getText().toString());
 
 
             }
