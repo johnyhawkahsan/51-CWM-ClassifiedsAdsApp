@@ -21,8 +21,10 @@ import android.widget.Toast;
 
 import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.UniversalImageLoader;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -339,7 +341,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 Log.d(TAG, "onSuccess: Uploaded image successfully");
 
 
-                DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+                DatabaseReference DBreference = FirebaseDatabase.getInstance().getReference();
                 //Save this reference in Post object
                 Post post = new Post();
                 post.setImage(firebaseUri.toString()); //Image URL within FireBase
@@ -354,9 +356,20 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 post.setUser_id(FirebaseAuth.getInstance().getCurrentUser().getUid()); //Get current logged in users id
 
                 //Save the object "post" data with title "posts" and then "PostId"
-                reference.child(getString(R.string.node_posts))
+                DBreference.child(getString(R.string.node_posts))
                         .child(postId)
-                        .setValue(post);
+                        .setValue(post)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Log.d(TAG, "onComplete: Post value set successfully");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "onFailure: Post value set was not complete = " + e.getMessage());
+                    }
+                });
 
                 resetFields();
 
