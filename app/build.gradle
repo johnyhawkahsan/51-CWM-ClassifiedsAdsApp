@@ -32,6 +32,12 @@ dependencies {
     //Design support library dependency
     compile 'com.android.support:design:25.3.1'
 
+    //ExinfInterface support for Rotating image problem in some devices
+    compile 'com.android.support:exifinterface:25.3.1'
+
+    //Recycler view dependency for RecyclerView to work in Search fragment
+    compile 'com.android.support:recyclerview-v7:25.3.1'
+
     //Universal image loader
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 

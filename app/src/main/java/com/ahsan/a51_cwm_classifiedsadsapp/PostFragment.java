@@ -20,6 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
+import com.ahsan.a51_cwm_classifiedsadsapp.util.RotateBitmap;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.UniversalImageLoader;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -279,6 +280,11 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                     //If bitmap is null, means we are using Uri, so we need to get this image from Uri and convert and compress in bitmap form and then upload.
                     mBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), params[0]); //params[0] contains our Uri
 
+                    //This method is used to handle image rotation problem in Samsung devices
+                    RotateBitmap rotateBitmap = new RotateBitmap();
+                    //mBitmap = rotateBitmap.HandleSamplingAndRotationBitmap(getActivity(), params[0]);//Give bitmap Uri to this method
+                    //Note: I'm not using the above method because I haven't faced the image rotation problem.
+
                 } catch (IOException e){
                     Log.e(TAG, "doInBackground: IOException: " + e.getMessage());
                 }
@@ -327,6 +333,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 .child("posts/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() +
                 "/" + postId + "/post_image");
 
+
         Log.d(TAG, "executeUploadTask: storageReference = " + storageReference);
 
         UploadTask uploadTask = storageReference.putBytes(mUploadBytes);
@@ -362,6 +369,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
+                        hideProgressBar();
                         Log.d(TAG, "onComplete: Post value set successfully");
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -385,6 +393,8 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
             @Override
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                 //TaskSnapshot was giving error "This method should only be accessed from tests or within private scope". Solved by this answer : https://stackoverflow.com/questions/41105586/android-firebase-tasksnapshot-method-should-only-be-accessed-within-privat
+
+                showProgressBar(); //I want it to appear here and hide when progress is completed
 
                 @SuppressWarnings("VisibleForTests") double currentProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
                 Log.d(TAG, "onProgress: upload currentProgress =  " + currentProgress + "& done");
