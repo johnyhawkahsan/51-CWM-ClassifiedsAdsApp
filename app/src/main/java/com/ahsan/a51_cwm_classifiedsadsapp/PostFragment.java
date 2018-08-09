@@ -126,10 +126,73 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
         });
 
 
-        //TODO: NOTE: We are sending data directly to FireBase
+        //We are sending data directly to FireBase when Post button is clicked
         mPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
+
+                //I am testing image upload here, so now I'm skipping image compression background task
+                //TODO: Testing completed. The image uploaded successfully but the problem was in FireBase access rules
+/*
+//=============================================================Test Code Start Here==============================================================================//
+                //We have a bitmap and no Uri
+                if (mSelectedBitmap != null && mSelectedUri == null){
+                    Log.d(TAG, "onClick: We have a bitmap and no Uri");
+
+                    //uploadNewPhoto(mSelectedBitmap);
+                    byte[] bytes = null;
+                    Log.d(TAG, "doInBackground: size before compression: " + mSelectedBitmap.getByteCount());
+                    Log.d(TAG, "doInBackground: size in megabytes before compression: " + mSelectedBitmap.getByteCount() / 1000000);
+
+                    bytes = getBytesFromBitmap(mSelectedBitmap, 100); //This method is defined below
+                    Log.d(TAG, "doInBackground: size after compression: " + bytes.length);//To get image size after compression
+
+                    Toast.makeText(getActivity(), "Image Ready to be posted to FireBase", Toast.LENGTH_SHORT).show();
+
+                    mUploadBytes = bytes;
+
+                    final String postId = FirebaseDatabase.getInstance().getReference().push().getKey(); //Get this posts unique id
+                    Log.d(TAG, "executeUploadTask: postId = " + postId);
+
+                    //Save this post in directory posts/users/userID/postId/post_image
+                    final StorageReference storageReference = FirebaseStorage.getInstance().getReference()
+                            .child("posts/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() +
+                                    "/" + postId + "/post_image");
+
+                    Log.d(TAG, "executeUploadTask: storageReference = " + storageReference);
+
+                    UploadTask uploadTask = storageReference.putBytes(mUploadBytes);
+                    uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                            Toast.makeText(getActivity(), "Post Success", Toast.LENGTH_SHORT).show();
+
+                            resetFields();
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                            Toast.makeText(getActivity(), "Could not upload photo", Toast.LENGTH_SHORT).show();
+
+                        }
+                    });
+                }
+//===========================================================//Test Code End Here==============================================================================//
+*/
+
+
+
+
+
+
+                //TODO: If image upload is successfully done, uncomment below lines and use resize code
+                //Testing completed. The image uploaded successfully but the problem was in FireBase access rules
+
                 Log.d(TAG, "onClick: attempting to post....");
                 if (!isEmpty(mTitle.getText().toString())
                         && !isEmpty(mDescription.getText().toString())
@@ -155,6 +218,8 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                     //Anyone of the above field is empty
                     Toast.makeText(getActivity(), "You must full out all the fields", Toast.LENGTH_SHORT).show();
                 }
+
+
             }
         });
     }
@@ -220,10 +285,12 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
             //Convert this bitmap (we received using Uri) into byte array using the method we created below
             //Also if the image was not Uri and was bitmap, it will automatically skip if statement and does this below task.
             byte[] bytes = null;
+            Log.d(TAG, "doInBackground: Kilobytes before compression: " + mBitmap.getByteCount());
             Log.d(TAG, "doInBackground: megabytes before compression: " + mBitmap.getByteCount() / 1000000);//To get image size before compression, dividing by 1000000 is size of mega bytes
 
             bytes = getBytesFromBitmap(mBitmap, 100); //This method is defined below
             Log.d(TAG, "doInBackground: megabytes after compression: " + bytes.length / 1000000);//To get image size after compression
+            Log.d(TAG, "doInBackground: Kilobytes after compression: " + bytes.length);
 
             return bytes;
         }
@@ -269,7 +336,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
 
                 //Insert the download urL for uploaded image into the FireBase database
                 @SuppressWarnings("VisibleForTests") Uri firebaseUri = taskSnapshot.getDownloadUrl();
-                Log.d(TAG, "onSuccess: FireBase download url: " + firebaseUri.toString());
+                Log.d(TAG, "onSuccess: Uploaded image successfully");
 
 
                 DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
@@ -306,9 +373,10 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                 //TaskSnapshot was giving error "This method should only be accessed from tests or within private scope". Solved by this answer : https://stackoverflow.com/questions/41105586/android-firebase-tasksnapshot-method-should-only-be-accessed-within-privat
 
-                //@SuppressWarnings("VisibleForTests") double currentProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                //Log.d(TAG, "onProgress: upload is " + mProgress + "& done");
-                //Toast.makeText(getActivity(), mProgress + "%", Toast.LENGTH_SHORT).show();
+                @SuppressWarnings("VisibleForTests") double currentProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                Log.d(TAG, "onProgress: upload currentProgress =  " + currentProgress + "& done");
+                Log.d(TAG, "onProgress: upload mProgress =  " + mProgress + "& done");
+                Toast.makeText(getActivity(), currentProgress + "%", Toast.LENGTH_SHORT).show();
 
                 //TODO: Because of the error, I used simple approach above so this is going to show progress too often now.
                 //This code is used to prevent showing the progress too often.
