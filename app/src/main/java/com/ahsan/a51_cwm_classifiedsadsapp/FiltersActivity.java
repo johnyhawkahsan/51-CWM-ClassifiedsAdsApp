@@ -50,18 +50,40 @@ public class FiltersActivity extends AppCompatActivity {
 
                 Log.d(TAG, "onClick: city: " + mCity.getText().toString());
                 editor.putString(getString(R.string.preference_city), mCity.getText().toString());
+                editor.commit();
+
+                Log.d(TAG, "onClick: state/province: " + mStateProvince.getText().toString());
+                editor.putString(getString(R.string.preference_state_province), mStateProvince.getText().toString());
+                editor.commit();
+
+                Log.d(TAG, "onClick: mCountry: " + mCountry.getText().toString());
+                editor.putString(getString(R.string.preference_country), mCountry.getText().toString());
+                editor.commit();
+
             }
         });
-        
+
+        //When back arrow pressed, finish this activity
+        mBackArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating back.");
+                finish();
+            }
+        });
     }
 
     private void getFilterPreferences() {
         Log.d(TAG, "getFilterPreferences: retrieving saved preferences.");
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String country = preferences.getString(getString(R.string.preference_country), "");
+        String country = preferences.getString(getString(R.string.preference_country), ""); //String key, default value
         String state_province = preferences.getString(getString(R.string.preference_state_province), "");
         String city = preferences.getString(getString(R.string.preference_city), "");
+
+        mCountry.setText(country);
+        mStateProvince.setText(state_province);
+        mCity.setText(city);
 
     }
 }

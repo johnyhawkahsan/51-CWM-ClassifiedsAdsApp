@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 /**
@@ -20,14 +21,17 @@ public class SearchFragment extends Fragment{
 
     //widgets
     private ImageView mFilters;
+    private EditText mSearch;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_search, container, false);
-
+        
         mFilters = (ImageView) view.findViewById(R.id.ic_search);
+        mSearch = (EditText) view.findViewById(R.id.input_search);
+
         mFilters.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
