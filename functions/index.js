@@ -1,8 +1,12 @@
 const functions = require('firebase-functions');
 const request = require('request-promise');
 
-//Check below documentation for new version differences.
+//Check below documentation for new version differences. Old version method "event" and "event.val()" was not working now.
 //https://firebase.google.com/docs/functions/beta-v1-diff
+//1. When a new onWrite event is triggered in RealTime database, this function copies the data to ElasticSearch.Process is called (I think) indexing.
+//2. Before that, we created a similar index in ElasticSearch repository using put method using PostMan software.
+//3. elasticSearchUrl is created when configuration is saved within FireBase Functions console.
+//4. Note: Only new events are saved in ElasticSearch, because the above documentation had the method change.after.val() made more sense to me.
 
 exports.indexPostsToElastic = functions.database.ref('/posts/{post_id}')
 	.onWrite((change, context) => {

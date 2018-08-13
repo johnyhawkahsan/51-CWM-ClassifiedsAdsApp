@@ -354,7 +354,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 post.setImage(firebaseUri.toString()); //Image URL within FireBase
                 post.setCity(mCity.getText().toString());
                 post.setContact_email(mContactEmail.getText().toString());
-                post.setCountry(mContactEmail.getText().toString());
+                post.setCountry(mCountry.getText().toString());
                 post.setDescription(mDescription.getText().toString());
                 post.setPost_id(postId);
                 post.setPrice(mPrice.getText().toString());
