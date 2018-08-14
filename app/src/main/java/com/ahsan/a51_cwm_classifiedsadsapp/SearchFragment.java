@@ -16,7 +16,9 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.ahsan.a51_cwm_classifiedsadsapp.models.HitsList;
 import com.ahsan.a51_cwm_classifiedsadsapp.models.HitsObject;
 import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.ElasticSearchAPI;
@@ -26,11 +28,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import okhttp3.Credentials;
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -93,18 +98,19 @@ public class SearchFragment extends Fragment{
                             .baseUrl(BASE_URL)
                             .addConverterFactory(GsonConverterFactory.create())
                             .build();
-                    ElasticSearchAPI searchAPI = retrofit.create(ElasticSearchAPI.class);
+                    ElasticSearchAPI searchAPI = retrofit.create(ElasticSearchAPI.class);//Create new object of ElasticSearchAPI class
 
                     HashMap<String, String> headerMap = new HashMap<String, String>();
                     headerMap.put("Authorization", Credentials.basic("user", mElasticSearchPassword)); //This is like inside Postman, using ->Authorization ->Basic-auth
 
                     //For search queries appended to Base URL. Example : _search?default_operator=AND&q=NIFA+city:peshawar+state_province:KPK
                     String searchString = "";
-                    if (!mSearchText.equals("")){
-                        searchString = searchString + mSearchText.getText().toString();
+                    if (!mSearchText.getText().equals("")){
+                        searchString = searchString + mSearchText.getText().toString() + "*";
                     }
                     if (!mPrefCity.equals("")){
-                        searchString = searchString + " city:" + mPrefCity; //NOTE: Leaving blank space before city, retrofit automatically adds +
+                        //NOTE: Leaving blank space before city, retrofit automatically adds + because we specified "AND" as our default operator, means every white space will be changed with + meaning AND
+                        searchString = searchString + " city:" + mPrefCity;
                     }
                     if (!mPrefStateProv.equals("")){
                         searchString = searchString + " state_province:" + mPrefStateProv;
@@ -113,7 +119,53 @@ public class SearchFragment extends Fragment{
                         searchString = searchString + " country:" + mPrefCountry;
                     }
 
-                    Call<HitsObject> call = searchAPI.search(headerMap, "AND", searchString + "*");
+                    Call<HitsObject> call = searchAPI.search(headerMap, "AND", searchString); //Default operator is "AND"
+                    call.enqueue(new Callback<HitsObject>() {
+                        @Override
+                        public void onResponse(Call<HitsObject> call, Response<HitsObject> response) {
+
+                            HitsList hitsList = new HitsList();
+                            String jsonResponse = "";
+                            try {
+                                Log.d(TAG, "onResponse: server response: " + response.toString());
+
+                                if (response.isSuccessful()){
+
+                                    hitsList = response.body().getHits();
+                                }else {
+                                    jsonResponse = response.errorBody().string();
+                                }
+
+                                //Hits list is not itself a list, but it contains a List. Please visit -> model -> HitsList
+                                Log.d(TAG, "onResponse: hits: " + hitsList);
+
+                                for (int i = 0 ; i < hitsList.getPostIndex().size(); i++){
+
+                                    Log.d(TAG, "onResponse: data: " + hitsList.getPostIndex().get(i).getPost().toString());
+
+                                    mPosts.add(hitsList.getPostIndex().get(i).getPost());
+
+                                }
+                                Log.d(TAG, "onResponse: size of posts: " + mPosts.size());
+
+                                //TODO: Setup the list of posts (Inside RecyclerView)
+
+
+                            } catch (NullPointerException e){
+                                Log.e(TAG, "onResponse: NullPointerException: " + e.getMessage() );
+                            }catch (IndexOutOfBoundsException e){
+                                Log.e(TAG, "onResponse: IndexOutOfBoundsException: " + e.getMessage() );
+                            }catch (IOException e){
+                                Log.e(TAG, "onResponse: IOException: " + e.getMessage() );
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<HitsObject> call, Throwable t) {
+                            Log.e(TAG, "onFailure: " + t.getMessage());
+                            Toast.makeText(getActivity(), "Search Failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
                 return false;
             }
@@ -127,16 +179,21 @@ public class SearchFragment extends Fragment{
     private void getElasticSearchPassword(){
         Log.d(TAG, "getElasticSearchPassword: retrieving elasticsearch password.");
 
-        //Query firebase for password field
+        //Query FireBase for password field
         Query query = FirebaseDatabase.getInstance().getReference()
-                .child(getString(R.string.node_elasticsearch))
-                .child(getString(R.string.field_password));
+                .child("posts") //Mitch was using R.string.node_elasticsearch whose value is "elasticsearch", but my FireBase database contains "posts"
+                .orderByValue();
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Log.d(TAG, "onDataChange: dataSnapshot = " + dataSnapshot.getChildren().iterator().next());
+
                 DataSnapshot singleSnapShot = dataSnapshot.getChildren().iterator().next();
                 mElasticSearchPassword = singleSnapShot.getValue().toString();
+
+                Log.d(TAG, "onDataChange: mElasticSearchPassword = " + mElasticSearchPassword);
             }
 
             @Override
