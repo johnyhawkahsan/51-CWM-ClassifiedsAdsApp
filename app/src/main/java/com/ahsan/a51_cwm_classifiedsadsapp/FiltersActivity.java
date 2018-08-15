@@ -36,7 +36,7 @@ public class FiltersActivity extends AppCompatActivity {
         mCountry = (EditText) findViewById(R.id.input_country);
         mBackArrow = (ImageView) findViewById(R.id.backArrow);
 
-        //get already saved preferences
+        //get already saved preferences and set text according to the previous data.
         getFilterPreferences();
 
         //When save button is clicked, the data within editText will be saved to those fields
@@ -59,6 +59,7 @@ public class FiltersActivity extends AppCompatActivity {
                 Log.d(TAG, "onClick: mCountry: " + mCountry.getText().toString());
                 editor.putString(getString(R.string.preference_country), mCountry.getText().toString());
                 editor.commit();
+                finish(); //After save button is clicked, dismiss FiltersActivity.
 
             }
         });
@@ -68,13 +69,13 @@ public class FiltersActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: navigating back.");
-                finish();
+                finish(); //Go back to whoever
             }
         });
     }
 
     private void getFilterPreferences() {
-        Log.d(TAG, "getFilterPreferences: retrieving saved preferences.");
+        Log.d(TAG, "getFilterPreferences: retrieving previously saved preferences.");
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         String country = preferences.getString(getString(R.string.preference_country), ""); //String key, default value

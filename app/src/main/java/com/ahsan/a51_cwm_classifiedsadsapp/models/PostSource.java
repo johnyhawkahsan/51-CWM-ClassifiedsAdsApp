@@ -5,9 +5,14 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * So the output of GET in Postman is in this form.
+ * The output of GET in Postman is in this form.
  * So, first "hits" is the object, then we have 2 ignored properties, then we have "hits" list
  * Within "hits" list, we have important "_source" field, which we define by "PostSource" object.
+ *
+ * "hits" = HitsObject class
+ * "hits" = HitsList class
+ * "_source" = PostSource class
+ *
  "hits": {
      "total": 1,
      "max_score": 2.2506514,

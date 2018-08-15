@@ -20,9 +20,9 @@ http://35.226.197.171/elasticsearch/posts/post/_search?default_operator=AND&q=NI
  */
 
     @GET("_search/")
-    Call<HitsObject> search(
-            @HeaderMap Map<String, String> headers,
-            @Query("default_operator") String operator, //1st query (automatically prepend '?')
-            @Query("q") String query //2nd query (automatically prepend '&')
+    Call<HitsObject> search( //This call will return HitsObject
+            @HeaderMap Map<String, String> headers, //Header uses Basic Authorization model within SearchFragment
+            @Query("default_operator") String operator, //1st query (automatically prepend '?'), we are going to use "AND" as default_operator
+            @Query("q") String query //2nd query (automatically prepend '&'), this is what user put in search textBox
             );
 }

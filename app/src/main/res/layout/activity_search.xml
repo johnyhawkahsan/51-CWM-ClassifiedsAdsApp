@@ -18,7 +18,7 @@
         <!--Collapsing Toolbar will collapse when we scroll down-->
         <android.support.design.widget.CollapsingToolbarLayout
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="60dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
             
             <android.support.design.widget.TabLayout

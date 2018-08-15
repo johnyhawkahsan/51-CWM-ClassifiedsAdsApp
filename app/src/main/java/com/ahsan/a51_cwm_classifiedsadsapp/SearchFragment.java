@@ -68,8 +68,8 @@ public class SearchFragment extends Fragment{
         mFilters = (ImageView) view.findViewById(R.id.ic_search);
         mSearchText = (EditText) view.findViewById(R.id.input_search);
 
-        getElasticSearchPassword();
-        getFilters();
+        getElasticSearchPassword(); //Get elastic search password saved in our database and save in variable mElasticSearchPassword
+        getFilters();//Get filters from FiltersActivity
 
         //When Search button is clicked, Launch FiltersActivity for setting Search filters in SharedPreferences
         mFilters.setOnClickListener(new View.OnClickListener() {
@@ -95,8 +95,8 @@ public class SearchFragment extends Fragment{
                     //Now we need to create our Search Query
                     mPosts = new ArrayList<Post>();
                     Retrofit retrofit = new Retrofit.Builder()
-                            .baseUrl(BASE_URL)
-                            .addConverterFactory(GsonConverterFactory.create())
+                            .baseUrl(BASE_URL) //Set the API base URL.
+                            .addConverterFactory(GsonConverterFactory.create()) //Add converter factory for serialization and deserialization of objects.
                             .build();
                     ElasticSearchAPI searchAPI = retrofit.create(ElasticSearchAPI.class);//Create new object of ElasticSearchAPI class
 
@@ -106,7 +106,7 @@ public class SearchFragment extends Fragment{
                     //For search queries appended to Base URL. Example : _search?default_operator=AND&q=NIFA+city:peshawar+state_province:KPK
                     String searchString = "";
                     if (!mSearchText.getText().equals("")){
-                        searchString = searchString + mSearchText.getText().toString() + "*";
+                        searchString = searchString + mSearchText.getText().toString() + "*";//Append * at the end of search text, also when user doesn't type any text, * means all the data is displayed.
                     }
                     if (!mPrefCity.equals("")){
                         //NOTE: Leaving blank space before city, retrofit automatically adds + because we specified "AND" as our default operator, means every white space will be changed with + meaning AND
@@ -120,7 +120,7 @@ public class SearchFragment extends Fragment{
                     }
 
                     Call<HitsObject> call = searchAPI.search(headerMap, "AND", searchString); //Default operator is "AND"
-                    call.enqueue(new Callback<HitsObject>() {
+                    call.enqueue(new Callback<HitsObject>() { //HitsObject are returned from ElasticSearchAPI request.
                         @Override
                         public void onResponse(Call<HitsObject> call, Response<HitsObject> response) {
 
@@ -131,14 +131,17 @@ public class SearchFragment extends Fragment{
 
                                 if (response.isSuccessful()){
 
-                                    hitsList = response.body().getHits();
+                                    hitsList = response.body().getHits(); //As the output is received in HitsObject form, we extract HitsList from it and assign to our own list.
+
                                 }else {
                                     jsonResponse = response.errorBody().string();
+                                    Log.e(TAG, "onResponse: error occured while retrieving HitsObject : " + jsonResponse );
                                 }
 
                                 //Hits list is not itself a list, but it contains a List. Please visit -> model -> HitsList
                                 Log.d(TAG, "onResponse: hits: " + hitsList);
 
+                                //Iterate through the hitsList and add each PostSource item to our ArrayList
                                 for (int i = 0 ; i < hitsList.getPostIndex().size(); i++){
 
                                     Log.d(TAG, "onResponse: data: " + hitsList.getPostIndex().get(i).getPost().toString());
@@ -146,9 +149,12 @@ public class SearchFragment extends Fragment{
                                     mPosts.add(hitsList.getPostIndex().get(i).getPost());
 
                                 }
+
                                 Log.d(TAG, "onResponse: size of posts: " + mPosts.size());
 
                                 //TODO: Setup the list of posts (Inside RecyclerView)
+
+
 
 
                             } catch (NullPointerException e){

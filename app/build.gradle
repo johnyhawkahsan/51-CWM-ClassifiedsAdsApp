@@ -49,8 +49,8 @@ dependencies {
 
 
     //---------------------------------------Copied from Friendly Chat App --------------------------------------//
-    //NOTE: When I used Firebase Assistant, it automatically chose 10.0.1, which means that I think chose compatible version of 25.3.1 with 10.0.1(Google Play Services)
-    //To add support for Firebase database
+    //NOTE: When I used FireBase Assistant, it automatically chose 10.0.1, which means that I think chose compatible version of 25.3.1 with 10.0.1(Google Play Services)
+    //To add support for FireBase database
     compile 'com.google.firebase:firebase-auth:10.0.1' // compile 'com.google.firebase:firebase-auth:10.0.1'  is added by Firebase Assistant
     compile 'com.google.firebase:firebase-database:10.0.1' //compile 'com.google.firebase:firebase-database:9.6.0' used by Firebase Tutorial, but I matched it with google services
     compile 'com.google.firebase:firebase-storage:10.0.1' // this is used for storage of images
