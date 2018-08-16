@@ -7,6 +7,8 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -22,6 +24,7 @@ import com.ahsan.a51_cwm_classifiedsadsapp.models.HitsList;
 import com.ahsan.a51_cwm_classifiedsadsapp.models.HitsObject;
 import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.ElasticSearchAPI;
+import com.ahsan.a51_cwm_classifiedsadsapp.util.PostListAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -47,10 +50,12 @@ public class SearchFragment extends Fragment{
 
     private static final String TAG = "SearchFragment";
     private static final String BASE_URL = "http://35.226.197.171/elasticsearch/posts/post/";
+    private static final int NUM_GRID_COLUMNS = 3;
 
     //widgets
     private ImageView mFilters;
     private EditText mSearchText;
+    private RecyclerView mRecyclerView;
 
     //vars
     private String mElasticSearchPassword; //We are not saving Password in our app, instead we created a node in FireBase and get from there.
@@ -58,6 +63,7 @@ public class SearchFragment extends Fragment{
     private String mPrefStateProv;
     private String mPrefCountry;
     private ArrayList<Post> mPosts; //ArrayList of Posts
+    private PostListAdapter mPostListAdapter;
 
     @Nullable
     @Override
@@ -67,10 +73,27 @@ public class SearchFragment extends Fragment{
         
         mFilters = (ImageView) view.findViewById(R.id.ic_search);
         mSearchText = (EditText) view.findViewById(R.id.input_search);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
 
         getElasticSearchPassword(); //Get elastic search password saved in our database and save in variable mElasticSearchPassword
-        getFilters();//Get filters from FiltersActivity
+        init();
 
+
+        return view;
+    }
+
+    //Setup RecyclerView with posts
+    public void setupPostsList(){
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), NUM_GRID_COLUMNS);
+        mRecyclerView.setLayoutManager(gridLayoutManager);
+        mPostListAdapter = new PostListAdapter(getActivity(), mPosts);
+        mRecyclerView.setAdapter(mPostListAdapter);
+
+    }
+
+
+    //Setup method for Search icon and return key to initiate search
+    public void init(){
         //When Search button is clicked, Launch FiltersActivity for setting Search filters in SharedPreferences
         mFilters.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,7 +176,7 @@ public class SearchFragment extends Fragment{
                                 Log.d(TAG, "onResponse: size of posts: " + mPosts.size());
 
                                 //TODO: Setup the list of posts (Inside RecyclerView)
-
+                                setupPostsList();
 
 
 
@@ -176,10 +199,9 @@ public class SearchFragment extends Fragment{
                 return false;
             }
         });
-
-
-        return view;
     }
+
+
 
     //We stored our Password in FireBase Database's node, so our app does not store it. This is a safe method.
     private void getElasticSearchPassword(){
