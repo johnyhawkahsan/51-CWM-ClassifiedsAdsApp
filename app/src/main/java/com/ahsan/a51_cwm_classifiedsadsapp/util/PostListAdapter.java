@@ -76,12 +76,13 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.ViewHo
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         UniversalImageLoader.setImage(mPosts.get(position).getImage(), holder.mPostImage);
-        
+
+        final int pos = position;
         //TODO: When user clicks the image, it should reidrect him to another activity or fragment with post details.
         holder.mPostImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: selected a post, position = " + holder.getAdapterPosition());
+                Log.d(TAG, "onClick: selected a post at position = " + holder.getAdapterPosition());
 
                 //View the post in more detail by calling "ViewPostFragment".
                 //Note that it's either called from "SearchFragment" #0 or "WatchListFragment" #1
@@ -92,16 +93,18 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.ViewHo
                 Log.d(TAG, "onClick: Fragment tag = " + ((SearchActivity)mContext).mViewPager.getCurrentItem());
 
                 if (fragment != null){
-                    //If called from "SearchFragment" #0
+                    //If ViewPostFragment called from "SearchFragment" #0
                     if (fragment.getTag().equals("android:switcher:" + R.id.viewpager_container + ":0")){
                         Log.d(TAG, "onClick: switching from SearchFragment #0 to :" + mContext.getString(R.string.fragment_view_post));
 
+                        //Create a new object of SearchFragment
                         SearchFragment searchFragment = (SearchFragment) ((SearchActivity)mContext).getSupportFragmentManager()
                                 .findFragmentByTag("android:switcher:" + R.id.viewpager_container + ":" +
                                         ((SearchActivity) mContext).mViewPager.getCurrentItem());
+                        searchFragment.viewPost(mPosts.get(pos).getPost_id());//get(pos) gets us single Post object and we use getPost_id() method of Post Object
 
                     }
-                    //If called from "WatchListFragment" #1
+                    //If ViewPostFragment called from "WatchListFragment" #1
                     else if (fragment.getTag().equals("android:switcher:" + R.id.viewpager_container + ":1")){
                         Log.d(TAG, "onClick: switching from WatchListFragment #1 to :" + mContext.getString(R.string.fragment_view_post));
 

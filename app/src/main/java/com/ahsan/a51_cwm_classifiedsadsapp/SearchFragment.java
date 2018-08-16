@@ -149,12 +149,15 @@ public class SearchFragment extends Fragment{
                         searchString = searchString + " country:" + mPrefCountry;
                     }
 
+
+                    //=======================Create a call to request Data========================================//
+
                     Call<HitsObject> call = searchAPI.search(headerMap, "AND", searchString); //Default operator is "AND"
                     call.enqueue(new Callback<HitsObject>() { //HitsObject are returned from ElasticSearchAPI request.
                         @Override
                         public void onResponse(Call<HitsObject> call, Response<HitsObject> response) {
 
-                            HitsList hitsList = new HitsList();
+                            HitsList hitsList = new HitsList(); //Create new HitsList object
                             String jsonResponse = "";
                             try {
                                 Log.d(TAG, "onResponse: server response: " + response.toString());
@@ -165,10 +168,10 @@ public class SearchFragment extends Fragment{
 
                                 }else {
                                     jsonResponse = response.errorBody().string();
-                                    Log.e(TAG, "onResponse: error occured while retrieving HitsObject : " + jsonResponse );
+                                    Log.e(TAG, "onResponse: error occurred while retrieving HitsObject : " + jsonResponse );
                                 }
 
-                                //Hits list is not itself a list, but it contains a List. Please visit -> model -> HitsList
+                                //Hits list is not itself a list, but it contains a PostSource List. Please visit -> model -> HitsList
                                 Log.d(TAG, "onResponse: hits: " + hitsList);
 
                                 //Iterate through the hitsList and add each PostSource item to our ArrayList
@@ -182,7 +185,7 @@ public class SearchFragment extends Fragment{
 
                                 Log.d(TAG, "onResponse: size of posts: " + mPosts.size());
 
-                                //TODO: Setup the list of posts (Inside RecyclerView)
+                                //Setup the list of posts (Inside RecyclerView) meaning display search result
                                 setupPostsList();
 
 
@@ -209,7 +212,7 @@ public class SearchFragment extends Fragment{
     }
 
 
-    //Method to launch ViewPostFragment when post is clicked
+    //This method is used by "PostListAdapter", wo it is initiated by creating an object of "SearchFragment" and it's called from there.
     public void viewPost(String postId){
         ViewPostFragment mViewPostFragment = new ViewPostFragment(); //New object of ViewPostFragment
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -219,7 +222,9 @@ public class SearchFragment extends Fragment{
         args.putString(getString(R.string.arg_post_id), postId);
         mViewPostFragment.setArguments(args);
 
-        transaction.replace(R.id.container, mViewPostFragment, getString(R.string.fragment_view_post) ); //Replace an existing fragment that was added to a view pager container within activity_search
+        //frameContainer is contained within "fragment_search" and by default is invisible.
+        //Please note that this is different than "viewpager_container" which is located in "activity_search".
+        transaction.replace(R.id.frameContainer, mViewPostFragment, getString(R.string.fragment_view_post) );
         transaction.addToBackStack(getString(R.string.fragment_view_post)); //means that the transaction will be remembered after it is committed, and will reverse its operation when later popped off the stack.
         transaction.commit();
 
@@ -234,7 +239,7 @@ public class SearchFragment extends Fragment{
 
         //Query FireBase for password field
         Query query = FirebaseDatabase.getInstance().getReference()
-                .child("posts") //Mitch was using R.string.node_elasticsearch whose value is "elasticsearch", but my FireBase database contains "posts"
+                .child(getString(R.string.node_posts)) //Mitch was using R.string.node_elasticsearch whose value is "elasticsearch", but my FireBase database contains "posts"
                 .orderByValue();
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -251,7 +256,7 @@ public class SearchFragment extends Fragment{
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.e(TAG, "onCancelled: databaseError : " + databaseError );
             }
         });
     }
@@ -270,6 +275,7 @@ public class SearchFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume: run getFilters() method");
         getFilters();
     }
 }
