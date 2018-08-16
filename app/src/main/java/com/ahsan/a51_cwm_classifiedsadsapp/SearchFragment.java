@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +27,7 @@ import com.ahsan.a51_cwm_classifiedsadsapp.models.HitsObject;
 import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.ElasticSearchAPI;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.PostListAdapter;
+import com.ahsan.a51_cwm_classifiedsadsapp.util.RecyclerViewMargin;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -51,11 +54,13 @@ public class SearchFragment extends Fragment{
     private static final String TAG = "SearchFragment";
     private static final String BASE_URL = "http://35.226.197.171/elasticsearch/posts/post/";
     private static final int NUM_GRID_COLUMNS = 3;
+    private static final int GRID_ITEM_MARGIN = 5;
 
     //widgets
     private ImageView mFilters;
     private EditText mSearchText;
     private RecyclerView mRecyclerView;
+    private FrameLayout mFrameLayout; //By default, this is invisible, only visible when user clicks on an item
 
     //vars
     private String mElasticSearchPassword; //We are not saving Password in our app, instead we created a node in FireBase and get from there.
@@ -74,7 +79,7 @@ public class SearchFragment extends Fragment{
         mFilters = (ImageView) view.findViewById(R.id.ic_search);
         mSearchText = (EditText) view.findViewById(R.id.input_search);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-
+        mFrameLayout = (FrameLayout) view.findViewById(R.id.frameContainer); //By default, this is invisible, only visible when user clicks on an item
         getElasticSearchPassword(); //Get elastic search password saved in our database and save in variable mElasticSearchPassword
         init();
 
@@ -84,7 +89,9 @@ public class SearchFragment extends Fragment{
 
     //Setup RecyclerView with posts
     public void setupPostsList(){
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), NUM_GRID_COLUMNS);
+        RecyclerViewMargin itemDecorator = new RecyclerViewMargin(GRID_ITEM_MARGIN, NUM_GRID_COLUMNS); //This class is used to add margins to images appearing in Recycler view
+        mRecyclerView.addItemDecoration(itemDecorator);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), NUM_GRID_COLUMNS); //Item is dis
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mPostListAdapter = new PostListAdapter(getActivity(), mPosts);
         mRecyclerView.setAdapter(mPostListAdapter);
@@ -201,6 +208,24 @@ public class SearchFragment extends Fragment{
         });
     }
 
+
+    //Method to launch ViewPostFragment when post is clicked
+    public void viewPost(String postId){
+        ViewPostFragment mViewPostFragment = new ViewPostFragment(); //New object of ViewPostFragment
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+
+        //Pass bundle for new fragment launch
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.arg_post_id), postId);
+        mViewPostFragment.setArguments(args);
+
+        transaction.replace(R.id.container, mViewPostFragment, getString(R.string.fragment_view_post) ); //Replace an existing fragment that was added to a view pager container within activity_search
+        transaction.addToBackStack(getString(R.string.fragment_view_post)); //means that the transaction will be remembered after it is committed, and will reverse its operation when later popped off the stack.
+        transaction.commit();
+
+        mFrameLayout.setVisibility(View.VISIBLE);//By default FrameLayout is invisible and RecyclerViw is visible.
+
+    }
 
 
     //We stored our Password in FireBase Database's node, so our app does not store it. This is a safe method.

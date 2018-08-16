@@ -3,6 +3,7 @@ package com.ahsan.a51_cwm_classifiedsadsapp;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,20 @@ import android.view.ViewGroup;
 public class ViewPostFragment extends Fragment{
 
     private static final String TAG = "ViewPostFragment";
+
+    //vars
+    private String mPostId;
+
+    //We need to import method onCreate because according to mitch, it's called before onCreateView
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mPostId = (String) getArguments().get(getString(R.string.arg_post_id));
+        Log.d(TAG, "onCreate: got the post id: " + mPostId);
+
+    }
+
+
 
     @Nullable
     @Override

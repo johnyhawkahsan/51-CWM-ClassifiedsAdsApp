@@ -1,6 +1,7 @@
 package com.ahsan.a51_cwm_classifiedsadsapp;
 
-import android.*;
+//=========================================This is our MainActivity===============================================//
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
