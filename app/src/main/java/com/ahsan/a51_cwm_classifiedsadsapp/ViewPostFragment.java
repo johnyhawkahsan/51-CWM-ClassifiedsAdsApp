@@ -2,6 +2,12 @@ package com.ahsan.a51_cwm_classifiedsadsapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BlurMaskFilter;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,9 +18,11 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
 import com.ahsan.a51_cwm_classifiedsadsapp.util.UniversalImageLoader;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -66,17 +74,76 @@ public class ViewPostFragment extends Fragment{
 
         init();
 
-        hideSoftKeyboard();
+        hideSoftKeyboard(); //Hide software keyboard from the display
 
         return view;
     }
 
+    private void init() {
+        getPostInfo(); //Search FireBase database based on the passed mPostId
+        contactSellerMethod();//Contact seller method initiates an email activity
 
-    private void init(){
-        getPostInfo();
+        //Close button method
+        mClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: closing post.");
+                getActivity().getSupportFragmentManager().popBackStack();//Pop the top state off the back stack
+            }
+        });
+        mClose.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_x_white));
+        //mClose.setImageBitmap(createOutline(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_x_white))); //Not using this method
+        //mClose.setColorFilter(Color.BLACK);
+
+        mSavePost.setShadowLayer(5, 0, 0, Color.BLACK);//Gives the text a shadow of the specified blur radius and color, the specified distance from its drawn position.
+
+        mWatchList.setImageBitmap(createOutline(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_save_white))); //Manually setting icon for mWatchList
+        mWatchList.setColorFilter(Color.BLACK);//Set a tinting option for the image.
+
+
 
     }
 
+    //When save button is clicked, add item to another node within fireBase database
+    private void addItemToWatchList(){
+        Log.d(TAG, "addItemToWatchList: adding item to watch list.");
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        reference.child(getString(R.string.node_watch_list)) //Create new node named watch_list for "Cart" like items
+                .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()) //Save current user's display name
+                .child(mPostId) //save post id
+                .child(getString(R.string.field_post_id))//Last item in the node will be our postId
+                .setValue(mPostId);
+        Toast.makeText(getActivity(), "Added to watch list", Toast.LENGTH_SHORT).show();
+    }
+
+    //When save button is clicked from Watch List, remove item from fireBase database
+    private void removeItemFromWatchList(){
+        Log.d(TAG, "removeItemFromWatchList: removing item to watch list.");
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        reference.child(getString(R.string.node_watch_list))
+                .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                .child(mPostId)
+                .removeValue();
+        Toast.makeText(getActivity(), "Removing from watch list", Toast.LENGTH_SHORT).show();
+    }
+
+    //Contact seller method initiates an email activity
+    private void contactSellerMethod() {
+        mContactSeller.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                emailIntent.setType("plain/text");
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {mPost.getContact_email()}); //add contact email details of seller
+                getActivity().startActivity(emailIntent);
+            }
+        });
+    }
+
+
+    //Search FireBase database based on the passed mPostId
     private void getPostInfo(){
         Log.d(TAG, "getPostInfo: getting the post information.");
 
@@ -111,10 +178,13 @@ public class ViewPostFragment extends Fragment{
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.e(TAG, "onCancelled: databaseError" + databaseError );
             }
         });
     }
+
+
+
 
     //Closing the keyboard when we navigate to this fragment
     private void hideSoftKeyboard(){
@@ -122,6 +192,8 @@ public class ViewPostFragment extends Fragment{
         final InputMethodManager inputManager = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 
         View focusedView = getActivity().getCurrentFocus();
+
+        //I'm using this check here because before it was creating some problems because of using wrong container.
         if (focusedView != null){
             inputManager.hideSoftInputFromWindow(focusedView.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
@@ -130,4 +202,10 @@ public class ViewPostFragment extends Fragment{
         }
     }
 
+    //Method to create outline - But I don't really like this method.
+    public Bitmap createOutline(Bitmap src){
+        Paint paint = new Paint();
+        paint.setMaskFilter(new BlurMaskFilter(2, BlurMaskFilter.Blur.OUTER));
+        return  src.extractAlpha(paint, null);
+    }
 }
