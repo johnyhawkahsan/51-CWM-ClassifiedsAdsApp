@@ -79,7 +79,7 @@ public class SearchFragment extends Fragment{
         mFilters = (ImageView) view.findViewById(R.id.ic_search);
         mSearchText = (EditText) view.findViewById(R.id.input_search);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        mFrameLayout = (FrameLayout) view.findViewById(R.id.frameContainer); //By default, this is invisible, only visible when user clicks on an item
+        mFrameLayout = (FrameLayout) view.findViewById(R.id.fragment_search_frameContainer); //By default, this is invisible, only visible when user clicks on an item
         getElasticSearchPassword(); //Get elastic search password saved in our database and save in variable mElasticSearchPassword
         init();
 
@@ -95,7 +95,6 @@ public class SearchFragment extends Fragment{
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mPostListAdapter = new PostListAdapter(getActivity(), mPosts);
         mRecyclerView.setAdapter(mPostListAdapter);
-
     }
 
 
@@ -177,7 +176,7 @@ public class SearchFragment extends Fragment{
                                 //Iterate through the hitsList and add each PostSource item to our ArrayList
                                 for (int i = 0 ; i < hitsList.getPostIndex().size(); i++){
 
-                                    Log.d(TAG, "onResponse: data: " + hitsList.getPostIndex().get(i).getPost().toString());
+                                    Log.d(TAG, "`: " + hitsList.getPostIndex().get(i).getPost().toString());
 
                                     mPosts.add(hitsList.getPostIndex().get(i).getPost());
 
@@ -224,12 +223,11 @@ public class SearchFragment extends Fragment{
 
         //frameContainer is contained within "fragment_search" and by default is invisible.
         //Please note that this is different than "viewpager_container" which is located in "activity_search".
-        transaction.replace(R.id.frameContainer, mViewPostFragment, getString(R.string.fragment_view_post) );
+        transaction.replace(R.id.fragment_search_frameContainer, mViewPostFragment, getString(R.string.fragment_view_post) );
         transaction.addToBackStack(getString(R.string.fragment_view_post)); //means that the transaction will be remembered after it is committed, and will reverse its operation when later popped off the stack.
         transaction.commit();
 
         mFrameLayout.setVisibility(View.VISIBLE);//By default FrameLayout is invisible and RecyclerViw is visible.
-
     }
 
 
@@ -260,6 +258,7 @@ public class SearchFragment extends Fragment{
             }
         });
     }
+
 
     //To get data stored in Shared Preferences
     private void getFilters(){

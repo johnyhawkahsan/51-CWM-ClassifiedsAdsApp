@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import com.ahsan.a51_cwm_classifiedsadsapp.R;
 import com.ahsan.a51_cwm_classifiedsadsapp.SearchActivity;
 import com.ahsan.a51_cwm_classifiedsadsapp.SearchFragment;
+import com.ahsan.a51_cwm_classifiedsadsapp.WatchListFragment;
 import com.ahsan.a51_cwm_classifiedsadsapp.models.Post;
 
 import java.util.ArrayList;
@@ -49,7 +50,6 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.ViewHo
 
             //Now we need to explicitly set the size of the image view widgets = Mitch thinks it makes images load faster
             int gridWidth = mContext.getResources().getDisplayMetrics().widthPixels; //Gets the absolute width of the device screen
-            Log.d(TAG, "ViewHolder: gridWidth = " + gridWidth); //Lets see what the gridWidth of this screen is.
             int imageWidth = gridWidth/NUM_GRID_COLUMNS;
             mPostImage.setMaxHeight(imageWidth); //Setting same size for imageHeight and Width
             mPostImage.setMaxWidth(imageWidth); //Setting same size for imageHeight and Width
@@ -108,6 +108,11 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.ViewHo
                     else if (fragment.getTag().equals("android:switcher:" + R.id.viewpager_container + ":1")){
                         Log.d(TAG, "onClick: switching from WatchListFragment #1 to :" + mContext.getString(R.string.fragment_view_post));
 
+                        //Create a new object of SearchFragment
+                        WatchListFragment watchListFragment = (WatchListFragment) ((SearchActivity)mContext).getSupportFragmentManager()
+                                .findFragmentByTag("android:switcher:" + R.id.viewpager_container + ":" +
+                                        ((SearchActivity) mContext).mViewPager.getCurrentItem());
+                        watchListFragment.viewPost(mPosts.get(pos).getPost_id());//get(pos) gets us single Post object and we use getPost_id() method of Post Object
 
                     }
                 }

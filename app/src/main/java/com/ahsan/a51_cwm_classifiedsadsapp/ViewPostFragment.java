@@ -43,7 +43,7 @@ public class ViewPostFragment extends Fragment{
     private ImageView mClose, mWatchList, mPostImage;
 
     //vars
-    private String mPostId;
+    private String mPostId; //To store the post id we receive from the calling fragment in arguments
     private Post mPost;
 
     //We need to import method onCreate because according to mitch, it's called before onCreateView
@@ -79,6 +79,7 @@ public class ViewPostFragment extends Fragment{
         return view;
     }
 
+    //Our main init method
     private void init() {
         getPostInfo(); //Search FireBase database based on the passed mPostId
         contactSellerMethod();//Contact seller method initiates an email activity
@@ -102,6 +103,66 @@ public class ViewPostFragment extends Fragment{
 
 
 
+        //Methods copied from PostListAdapter
+        //This differentiates between our fragments
+        Fragment fragment = (Fragment) ((SearchActivity)getActivity()).getSupportFragmentManager()
+                .findFragmentByTag("android:switcher:" + R.id.viewpager_container + ":" +
+                        ((SearchActivity) getActivity()).mViewPager.getCurrentItem()); //This will get the tag number of the calling fragment.
+
+        Log.d(TAG, "onClick: Fragment tag = " + ((SearchActivity)getActivity()).mViewPager.getCurrentItem());
+
+        //Differentiate between fragments by comparing tags.
+        if (fragment != null){
+            //If "SearchFragment" #0
+            if (fragment.getTag().equals("android:switcher:" + R.id.viewpager_container + ":0")){
+                Log.d(TAG, "onClick: switching from SearchFragment #0 to :" + getActivity().getString(R.string.fragment_view_post));
+
+                //In SearchFragment, we need our "SaveButton" to work like this
+                mSavePost.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        addItemToWatchList();
+                        Log.d(TAG, "onClick: addItemToWatchList()");
+                    }
+                });
+
+                //Image View mWatchList does the same function as the above text view mSavePost
+                mWatchList.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        addItemToWatchList();
+                        Log.d(TAG, "onClick: addItemToWatchList()");
+                    }
+                });
+            }
+
+
+            //If "WatchListFragment" #1
+            else if (fragment.getTag().equals("android:switcher:" + R.id.viewpager_container + ":1")){
+                Log.d(TAG, "onClick: switching from WatchListFragment #1 to :" + getActivity().getString(R.string.fragment_watch_list));
+
+                mSavePost.setText("remove post");
+                mSavePost.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        removeItemFromWatchList();
+                        Log.d(TAG, "onClick: removeItemFromWatchList()");
+                        getActivity().getSupportFragmentManager().popBackStack(); //After removing item from Database, go back to calling activity.
+                    }
+                });
+                mWatchList.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        removeItemFromWatchList();
+                        Log.d(TAG, "onClick: removeItemFromWatchList()");
+                        getActivity().getSupportFragmentManager().popBackStack(); //After removing item from Database, go back to calling activity.
+                    }
+                });
+
+            }
+        }
+
+
     }
 
     //When save button is clicked, add item to another node within fireBase database
@@ -110,7 +171,7 @@ public class ViewPostFragment extends Fragment{
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         reference.child(getString(R.string.node_watch_list)) //Create new node named watch_list for "Cart" like items
-                .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()) //Save current user's display name
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid()) //Save current user's display name
                 .child(mPostId) //save post id
                 .child(getString(R.string.field_post_id))//Last item in the node will be our postId
                 .setValue(mPostId);
@@ -119,15 +180,16 @@ public class ViewPostFragment extends Fragment{
 
     //When save button is clicked from Watch List, remove item from fireBase database
     private void removeItemFromWatchList(){
-        Log.d(TAG, "removeItemFromWatchList: removing item to watch list.");
+        Log.d(TAG, "removeItemFromWatchList: removing item from watch list.");
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         reference.child(getString(R.string.node_watch_list))
-                .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .child(mPostId)
                 .removeValue();
-        Toast.makeText(getActivity(), "Removing from watch list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "Removed from watch list", Toast.LENGTH_SHORT).show();
     }
+
 
     //Contact seller method initiates an email activity
     private void contactSellerMethod() {
