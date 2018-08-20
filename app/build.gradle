@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '28.0.2'
     defaultConfig {
         applicationId "com.ahsan.a51_cwm_classifiedsadsapp"
         minSdkVersion 19
@@ -20,41 +20,34 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support.constraint:constraint-layout:1.1.2'
     testCompile 'junit:junit:4.12'
-
     compile 'com.android.support:appcompat-v7:25.3.1'
-
     //Design support library dependency
     compile 'com.android.support:design:25.3.1'
-
     //ExinfInterface support for Rotating image problem in some devices
     compile 'com.android.support:exifinterface:25.3.1'
-
     //Recycler view dependency for RecyclerView to work in Search fragment
     compile 'com.android.support:recyclerview-v7:25.3.1'
-
     //Universal image loader
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
-
     //Retrofit libraries to make our queries
     compile 'com.squareup.retrofit2:retrofit:2.4.0'
-
     //Retrofit gson library to convert data to gson or json
     compile 'com.squareup.retrofit2:converter-gson:2.4.0'
-
-
     //---------------------------------------Copied from Friendly Chat App --------------------------------------//
     //NOTE: When I used FireBase Assistant, it automatically chose 10.0.1, which means that I think chose compatible version of 25.3.1 with 10.0.1(Google Play Services)
     //To add support for FireBase database
-    compile 'com.google.firebase:firebase-auth:10.0.1' // compile 'com.google.firebase:firebase-auth:10.0.1'  is added by Firebase Assistant
-    compile 'com.google.firebase:firebase-database:10.0.1' //compile 'com.google.firebase:firebase-database:9.6.0' used by Firebase Tutorial, but I matched it with google services
-    compile 'com.google.firebase:firebase-storage:10.0.1' // this is used for storage of images
-
+    compile 'com.google.firebase:firebase-auth:10.0.1'
+    // compile 'com.google.firebase:firebase-auth:10.0.1'  is added by Firebase Assistant
+    compile 'com.google.firebase:firebase-database:10.0.1'
+    //compile 'com.google.firebase:firebase-database:9.6.0' used by Firebase Tutorial, but I matched it with google services
+    compile 'com.google.firebase:firebase-storage:10.0.1'
+    // this is used for storage of images
 }
 // Add to the bottom of the file- According to FireBase
 apply plugin: 'com.google.gms.google-services' //Make sure to add in your main build.gradle classpath 'com.google.gms:google-services:3.1.0'
