@@ -344,7 +344,7 @@ public class PostFragment extends Fragment implements SelectPhotoDialog.OnPhotoS
                 Toast.makeText(getActivity(), "Post Success", Toast.LENGTH_SHORT).show();
 
                 //Insert the download urL for uploaded image into the FireBase database
-                @SuppressWarnings("VisibleForTests") Uri firebaseUri = taskSnapshot.getDownloadUrl();
+                @SuppressWarnings("VisibleForTests") Uri firebaseUri = taskSnapshot.getUploadSessionUri();
                 Log.d(TAG, "onSuccess: Uploaded image successfully");
 
 
